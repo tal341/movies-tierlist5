@@ -31,8 +31,19 @@
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      overflow-x: auto;
+      overflow-x: auto; /* ✅ מאפשר גלילה אופקית */
       padding: 5px;
+      scroll-behavior: smooth;
+    }
+    .tier::-webkit-scrollbar {
+      height: 8px;
+    }
+    .tier::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+    .tier::-webkit-scrollbar-track {
+      background: #222;
     }
     .tier-label {
       writing-mode: horizontal-tb;
