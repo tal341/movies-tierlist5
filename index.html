@@ -2,145 +2,419 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Movie Tier List</title>
+  <title>🎬 My Movie Tier List</title>
+  <meta name="description" content="Create a personal tier list for movies & series. Drag posters into tiers, save as image or save lists to history.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      margin: 0;
-      background: #111;
-      color: white;
-      font-family: sans-serif;
-    }
-    header {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-      background: #000;
-    }
-    .tier-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px;
-    }
-    .tier {
-      min-height: 100px;
-      border: 2px solid #333;
-      border-radius: 8px;
-      padding: 10px;
-      background: linear-gradient(to right, #222, #111);
-      display: flex;
-      flex-direction: column; /* עיקר השינוי: כל Tier הוא עמודה */
-    }
+    /* --- Base --- */
+    body { margin: 0; background: #0a0a0a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    header { display: flex; align-items: center; justify-content: center; padding: 18px 12px; background: rgba(10,10,10,0.9); position: relative; }
+    h1 { margin: 0; font-size: 2.1rem; letter-spacing: 1px; }
+    .made-by { position: absolute; top: 12px; right: 120px; font-size: 13px; opacity: 0.8; background: rgba(30,30,30,0.6); padding: 4px 10px; border-radius: 16px; }
+    .made-by strong { color: #ffdd55; }
+    /* header buttons */
+    .header-controls { position: absolute; right: 18px; top: 10px; display:flex; gap:8px; }
+    .icon-btn { width:36px; height:36px; border-radius:50%; background: rgba(40,40,40,0.7); border: none; color:#ffdd55; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .plain-btn { padding:8px 12px; border-radius:10px; background: rgba(40,40,40,0.7); border:none; color:white; cursor:pointer; font-weight:600; }
 
-    .tier-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
+    /* Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.25s ease; }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal { background: #1a1a1a; width: 94%; max-width: 640px; padding: 20px; border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+    .modal h2 { margin: 0 0 10px 0; color: #ffdd55; }
+    .close-modal { position: absolute; right: 18px; top: 12px; background: none; border: none; color: #aaa; font-size: 20px; cursor:pointer }
 
-    .tier-label {
-      font-weight: bold;
-      color: #fff;
-      min-width: 60px;
-      text-align: right;
-      margin-right: 15px;
-    }
+    .tier-list { display: flex; flex-direction: column; gap: 16px; padding: 20px 16px; }
+    .tier { min-height: 120px; border-radius: 12px; padding: 16px; display:flex; align-items:flex-start; flex-wrap: wrap; gap: 12px; position: relative; }
+    .tier-label-container { min-width:110px; }
+    .tier-label { font-weight:900; font-size:24px; color:#fff; }
+    .tier-subtitle { font-size:12px; opacity:0.8; }
+    .poster { width:120px; height:auto; cursor:grab; border-radius:10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    #unranked-area { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; padding:18px; border-top:3px solid rgba(80,80,80,0.4); background: rgba(20,20,20,0.6); border-radius:12px; margin:14px; }
+    #unranked-label { text-align:center; font-size:20px; width:100%; color:#ccc; }
+    #movieInput { display:block; margin: 12px auto; padding:12px 14px; width:85%; max-width:480px; background: rgba(30,30,30,0.8); color:white; border:2px solid rgba(100,100,100,0.5); border-radius:10px; font-size:15px; }
+    input[type="file"], .download-btn, .reset-btn, .save-list-btn { display:inline-block; margin:10px 6px; padding:10px 14px; background: rgba(40,40,40,0.8); color: white; border: 2px solid rgba(100,100,100,0.5); border-radius:10px; cursor:pointer; font-size:14px; }
+    .download-btn:hover, .save-list-btn:hover { background: rgba(70,70,100,0.9); }
+    .reset-btn:hover { background: rgba(100,50,50,0.9); }
 
-    .tier-content {
-      display: flex;
-      flex-wrap: wrap; /* 🎯 זה מה שאתה רצית — יורד שורה כשאין מקום */
-      gap: 10px;
-      align-items: flex-start;
-    }
+    /* Mobile selector */
+    .mobile-tier-popup { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #222; padding: 12px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.5); z-index: 2000; display: none; flex-wrap: wrap; gap: 8px; }
+    .mobile-tier-btn { padding: 8px 10px; background: rgba(50,50,50,0.8); border: 1px solid #444; color: white; border-radius: 8px; cursor:pointer; font-weight:700; }
 
-    /* שמרתי על כל הצבעים שלך לפי Tier */
-    .tier.SSS { background: linear-gradient(to right, #5a0000, #220000); }
-    .tier.SS  { background: linear-gradient(to right, #5a3b00, #221800); }
-    .tier.S   { background: linear-gradient(to right, #5a4f00, #221f00); }
-    .tier.Ap  { background: linear-gradient(to right, #004f3b, #001f18); }
-    .tier.B   { background: linear-gradient(to right, #003b5a, #001822); }
-    .tier.C   { background: linear-gradient(to right, #3b005a, #180022); }
+    /* lists area */
+    .lists-grid { display:flex; flex-direction:column; gap:8px; max-height:420px; overflow:auto; }
+    .list-row { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; background:#151515; border-radius:8px; }
+    .list-row .meta { font-size:13px; color:#ddd }
+    .small { font-size:12px; color:#aaa }
 
-    .poster {
-      width: 120px;
-      height: auto;
-      cursor: grab;
-    }
-
-    #unranked-area {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 20px 10px;
-      gap: 10px;
-      border-top: 2px solid #333;
-      background: #222;
-    }
-
-    input[type="file"] {
-      display: block;
-      margin: 20px auto;
-      padding: 10px;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 1.8rem;
+    /* responsive tweaks - keep zoom behavior as user requested, don't force zoom-out */
+    @media (max-width:460px) {
+      h1 { font-size:1.6rem; }
+      .made-by { right: 90px; }
+      .poster { width:96px; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>🎬 Movie Tier List</h1>
+    <h1>🎬 My Movie Tier List</h1>
+    <span class="made-by">Made by <strong>TaL.S</strong></span>
+    <div class="header-controls">
+      <button class="plain-btn" id="listsBtn">Lists</button>
+      <button class="icon-btn" id="settingsBtn">ⓘ</button>
+    </div>
   </header>
 
-  <div class="tier-list">
-    <!-- כל Tier מחולק לכותרת + תוכן נפרד כדי לאפשר warp -->
-    <div class="tier SSS" data-tier="SSS">
-      <div class="tier-header">
-        <div class="tier-label">SSS</div>
-      </div>
-      <div class="tier-content"></div>
-    </div>
+  <div class="tier-list" id="tierListWrapper">
+    <div class="tier SSS" data-tier="SSS"><div class="tier-label-container"><div class="tier-label-wrapper"><span class="tier-icon">🏆</span><div class="tier-label">SSS</div></div><div class="tier-subtitle">Top</div></div></div>
+    <div class="tier SS" data-tier="SS"><div class="tier-label-container"><div class="tier-label-wrapper"><span class="tier-icon">⭐</span><div class="tier-label">SS</div></div><div class="tier-subtitle">Excellent</div></div></div>
+    <div class="tier S" data-tier="S"><div class="tier-label-container"><div class="tier-label-wrapper"><span class="tier-icon">👍</span><div class="tier-label">S</div></div><div class="tier-subtitle">Great</div></div></div>
+    <div class="tier Ap" data-tier="A+"><div class="tier-label-container"><div class="tier-label-wrapper"><span class="tier-icon">✅</span><div class="tier-label">A+</div></div><div class="tier-subtitle">Good</div></div></div>
+    <div class="tier B" data-tier="B"><div class="tier-label-container"><div class="tier-label-wrapper"><span class="tier-icon">😐</span><div class="tier-label">B</div></div><div class="tier-subtitle">Okay</div></div></div>
+    <div class="tier C" data-tier="C"><div class="tier-label-container"><div class="tier-label-wrapper"><span class="tier-icon">🗑️</span><div class="tier-label">C</div></div><div class="tier-subtitle">Trash</div></div></div>
+  </div>
 
-    <div class="tier SS" data-tier="SS">
-      <div class="tier-header">
-        <div class="tier-label">SS</div>
-      </div>
-      <div class="tier-content"></div>
-    </div>
+  <div id="unranked-label">🎬 Movies & Series</div>
+  <div id="unranked-area"></div>
 
-    <div class="tier S" data-tier="S">
-      <div class="tier-header">
-        <div class="tier-label">S</div>
-      </div>
-      <div class="tier-content"></div>
-    </div>
+  <input type="text" id="movieInput" placeholder="🎬 Enter movie or series name and press Enter">
+  <input type="file" id="fileInput" multiple accept="image/*">
+  <button id="downloadBtn" class="download-btn">💾 Save as Image</button>
+  <button id="saveListBtn" class="save-list-btn">💾 Save List</button>
+  <button id="resetBtn" class="reset-btn">🔄 Reset All</button>
 
-    <div class="tier Ap" data-tier="A+">
-      <div class="tier-header">
-        <div class="tier-label">A+</div>
-      </div>
-      <div class="tier-content"></div>
-    </div>
+  <!-- Settings Modal (English) -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <button class="close-modal" id="closeSettings">&times;</button>
+      <h2>🛠 Settings & Help</h2>
 
-    <div class="tier B" data-tier="B">
-      <div class="tier-header">
-        <div class="tier-label">B</div>
-      </div>
-      <div class="tier-content"></div>
-    </div>
+      <p><strong>How to use</strong><br>
+         Type a movie or series name in the input above and press Enter.<br>
+         The poster will appear below — drag it into a tier with your mouse. On mobile, tap the poster to choose a tier.</p>
 
-    <div class="tier C" data-tier="C">
-      <div class="tier-header">
-        <div class="tier-label">C</div>
+      <p><strong>Saving</strong><br>
+         Click "Save as Image" to download the current view as PNG.<br>
+         Use "Save List" to store this ranking to your browser history (you can later load, export, or delete saved lists).</p>
+
+      <div class="edit-tier-section">
+        <h3>✏️ Customize Tier Names</h3>
+        <div class="tier-edit-row">
+          <span class="label-preview">SSS</span>
+          <input type="text" class="tier-input" data-target="SSS" placeholder="New name for SSS" value="SSS">
+        </div>
+        <div class="tier-edit-row">
+          <span class="label-preview">SS</span>
+          <input type="text" class="tier-input" data-target="SS" placeholder="New name for SS" value="SS">
+        </div>
+        <div class="tier-edit-row">
+          <span class="label-preview">S</span>
+          <input type="text" class="tier-input" data-target="S" placeholder="New name for S" value="S">
+        </div>
+        <div class="tier-edit-row">
+          <span class="label-preview">A+</span>
+          <input type="text" class="tier-input" data-target="A+" placeholder="New name for A+" value="A+">
+        </div>
+        <div class="tier-edit-row">
+          <span class="label-preview">B</span>
+          <input type="text" class="tier-input" data-target="B" placeholder="New name for B" value="B">
+        </div>
+        <div class="tier-edit-row">
+          <span class="label-preview">C</span>
+          <input type="text" class="tier-input" data-target="C" placeholder="New name for C" value="C">
+        </div>
       </div>
-      <div class="tier-content"></div>
+
+      <div style="margin-top:16px; padding-top:12px; border-top:1px solid #2a2a2a; font-size:13px; color:#ccc;">
+        Made with care by <strong>TaL.S</strong>
+      </div>
     </div>
   </div>
+
+  <!-- Lists Modal -->
+  <div class="modal-overlay" id="listsModal">
+    <div class="modal">
+      <button class="close-modal" id="closeLists">&times;</button>
+      <h2>📚 Saved Lists</h2>
+      <div style="margin-bottom:10px; display:flex; gap:8px; align-items:center;">
+        <button id="exportAllBtn" class="plain-btn">Export All (JSON)</button>
+        <input type="file" id="importFile" accept="application/json" style="display:inline-block;">
+      </div>
+      <div class="lists-grid" id="listsGrid"></div>
+      <div style="margin-top:14px; font-size:13px; color:#bbb;">Tip: you can export a JSON backup and import it later on another device.</div>
+    </div>
+  </div>
+
+  <!-- Mobile Tier Selector -->
+  <div class="mobile-tier-popup" id="mobileTierPopup">
+    <div class="mobile-tier-btn SSS" data-tier="SSS">SSS</div>
+    <div class="mobile-tier-btn SS" data-tier="SS">SS</div>
+    <div class="mobile-tier-btn S" data-tier="S">S</div>
+    <div class="mobile-tier-btn Ap" data-tier="A+">A+</div>
+    <div class="mobile-tier-btn B" data-tier="B">B</div>
+    <div class="mobile-tier-btn C" data-tier="C">C</div>
+    <div class="mobile-tier-btn" id="cancelMobileSelect" style="background:#555;">Cancel</div>
+  </div>
+
+  <script>
+    // -------------------- Config --------------------
+    const OMDB_API_KEY = "ee77ebb9"; // keep your key
+    const STORAGE_KEY = 'movieTierLists_v1';
+
+    // -------------------- DOM --------------------
+    const fileInput = document.getElementById('fileInput');
+    const movieInput = document.getElementById('movieInput');
+    const unranked = document.getElementById('unranked-area');
+    const tiers = document.querySelectorAll('.tier');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const closeSettings = document.getElementById('closeSettings');
+    const modalOverlay = document.getElementById('settingsModal');
+    const tierInputs = document.querySelectorAll('.tier-input');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const saveListBtn = document.getElementById('saveListBtn');
+    const listsBtn = document.getElementById('listsBtn');
+    const listsModal = document.getElementById('listsModal');
+    const closeLists = document.getElementById('closeLists');
+    const listsGrid = document.getElementById('listsGrid');
+    const exportAllBtn = document.getElementById('exportAllBtn');
+    const importFile = document.getElementById('importFile');
+
+    // -------------------- Helpers --------------------
+    function isMobile() { return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent); }
+
+    // -------------------- Poster creation --------------------
+    movieInput.addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter') {
+        const movieName = e.target.value.trim();
+        if (!movieName) return;
+        try {
+          const response = await fetch(`https://www.omdbapi.com/?t=${encodeURIComponent(movieName)}&apikey=${OMDB_API_KEY}`);
+          const data = await response.json();
+          if (data.Response === "False") { alert("Movie/series not found. Try another name or use English title."); return; }
+          if (!data.Poster || data.Poster === "N/A") { alert("No poster available for this title."); return; }
+          const img = document.createElement('img');
+          img.src = data.Poster;
+          img.alt = data.Title;
+          img.title = `${data.Title} (${data.Year}) • ${data.Type}`;
+          img.classList.add('poster');
+          img.draggable = true;
+          img.dataset.movieTitle = data.Title;
+          img.dataset.movieYear = data.Year || '';
+          img.dataset.movieType = data.Type || '';
+          img.addEventListener('dragstart', dragStart);
+          img.addEventListener('click', onPosterClick);
+          img.onload = () => { unranked.appendChild(img); movieInput.value = ''; movieInput.placeholder = '🎬 Try another one...'; };
+          img.onerror = () => { alert('Image load error. Try again.'); };
+        } catch (error) { alert('Error fetching data. Check internet connection.'); console.error(error); }
+      }
+    });
+
+    fileInput.addEventListener('change', (event) => {
+      const files = event.target.files;
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.classList.add('poster');
+          img.draggable = true;
+          img.dataset.originalSrc = e.target.result;
+          img.addEventListener('dragstart', dragStart);
+          img.addEventListener('click', onPosterClick);
+          unranked.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function dragStart(e) { e.dataTransfer.setData('text/plain', e.target.src); }
+
+    tiers.forEach(tier => {
+      tier.addEventListener('dragover', (e) => e.preventDefault());
+      tier.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const src = e.dataTransfer.getData('text/plain');
+        const img = document.querySelector(`img[src='${src}']`);
+        if (img) tier.appendChild(img);
+      });
+    });
+    unranked.addEventListener('dragover', (e) => e.preventDefault());
+    unranked.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const src = e.dataTransfer.getData('text/plain');
+      const img = document.querySelector(`img[src='${src}']`);
+      if (img) unranked.appendChild(img);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      const allPosters = document.querySelectorAll('.poster');
+      allPosters.forEach(poster => unranked.appendChild(poster));
+    });
+
+    // -------------------- Mobile poster click => choose tier --------------------
+    let currentSelectedPoster = null;
+    function initMobilePosterClick() {
+      if (!isMobile()) return;
+      document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('poster')) {
+          currentSelectedPoster = e.target;
+          const popup = document.getElementById('mobileTierPopup');
+          popup.style.display = 'flex';
+        }
+      });
+      const popupButtons = document.querySelectorAll('.mobile-tier-btn');
+      popupButtons.forEach(btn => {
+        if (btn.id === 'cancelMobileSelect') {
+          btn.addEventListener('click', () => { document.getElementById('mobileTierPopup').style.display = 'none'; });
+        } else {
+          btn.addEventListener('click', () => {
+            const tierName = btn.dataset.tier;
+            const targetTier = document.querySelector(`.tier[data-tier="${tierName}"]`);
+            if (currentSelectedPoster && targetTier) { targetTier.appendChild(currentSelectedPoster); document.getElementById('mobileTierPopup').style.display = 'none'; }
+          });
+        }
+      });
+    }
+
+    function onPosterClick(e) {
+      // mobile fallback for non-drag interaction
+      if (isMobile()) { currentSelectedPoster = e.target; document.getElementById('mobileTierPopup').style.display = 'flex'; }
+    }
+
+    // -------------------- Download as image --------------------
+    downloadBtn.addEventListener('click', () => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      script.onload = () => {
+        const element = document.querySelector('.tier-list').parentNode;
+        html2canvas(element, { backgroundColor: '#0a0a0a', scale: 2, useCORS: true, allowTaint: true }).then(canvas => {
+          const link = document.createElement('a');
+          link.download = 'my-movie-tierlist.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }).catch(err => { alert('Error creating image.'); console.error(err); });
+      };
+      document.head.appendChild(script);
+    });
+
+    // -------------------- Settings modal ---
+    settingsBtn.addEventListener('click', () => { modalOverlay.classList.add('active'); });
+    closeSettings.addEventListener('click', () => { modalOverlay.classList.remove('active'); });
+    modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('active'); });
+    tierInputs.forEach(input => {
+      input.addEventListener('input', function() {
+        const targetTier = this.dataset.target;
+        const labelElement = document.querySelector(`.tier[data-tier="${targetTier}"] .tier-label`);
+        if (labelElement) { labelElement.textContent = this.value; }
+      });
+    });
+
+    // -------------------- Lists (save/load/export/import) --------------------
+    function readStorage() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { return []; }
+    }
+    function writeStorage(items) { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+
+    function captureCurrentList() {
+      const tiersEls = document.querySelectorAll('.tier');
+      const data = { createdAt: new Date().toISOString(), tiers: [] };
+      tiersEls.forEach(t => {
+        const tierId = t.dataset.tier;
+        const label = t.querySelector('.tier-label')?.textContent || tierId;
+        const imgs = Array.from(t.querySelectorAll('img.poster')).map(img => ({ src: img.src, title: img.dataset.movieTitle || '', year: img.dataset.movieYear || '', type: img.dataset.movieType || '' }));
+        data.tiers.push({ tierId, label, items: imgs });
+      });
+      // unranked
+      const unrankedImgs = Array.from(unranked.querySelectorAll('img.poster')).map(img => ({ src: img.src, title: img.dataset.movieTitle || '', year: img.dataset.movieYear || '' }));
+      data.unranked = unrankedImgs;
+      return data;
+    }
+
+    function saveCurrentList(name) {
+      const all = readStorage();
+      const payload = captureCurrentList();
+      payload.name = name || `List ${new Date().toLocaleString()}`;
+      all.unshift(payload); // newest first
+      writeStorage(all);
+    }
+
+    saveListBtn.addEventListener('click', () => {
+      const name = prompt('Save current list as (name):', `My List ${new Date().toLocaleString()}`);
+      if (!name) return; saveCurrentList(name); alert('Saved to local history. Open Lists to manage.');
+    });
+
+    listsBtn.addEventListener('click', () => { refreshListsGrid(); listsModal.classList.add('active'); });
+    closeLists.addEventListener('click', () => { listsModal.classList.remove('active'); });
+    listsModal.addEventListener('click', (e) => { if (e.target === listsModal) listsModal.classList.remove('active'); });
+
+    function refreshListsGrid() {
+      const items = readStorage();
+      listsGrid.innerHTML = '';
+      if (!items.length) { listsGrid.innerHTML = '<div class="small">No saved lists yet. Save a list from the main screen.</div>'; return; }
+      items.forEach((it, idx) => {
+        const row = document.createElement('div'); row.className = 'list-row';
+        const meta = document.createElement('div'); meta.className = 'meta'; meta.innerHTML = `<strong>${it.name}</strong><div class="small">${new Date(it.createdAt).toLocaleString()}</div>`;
+        const actions = document.createElement('div'); actions.style.display='flex'; actions.style.gap='6px';
+        const loadBtn = document.createElement('button'); loadBtn.className='plain-btn'; loadBtn.textContent='Load'; loadBtn.onclick = () => { loadList(idx); listsModal.classList.remove('active'); };
+        const exportBtn = document.createElement('button'); exportBtn.className='plain-btn'; exportBtn.textContent='Export'; exportBtn.onclick = () => { downloadJSON(it, (it.name||'list') + '.json'); };
+        const delBtn = document.createElement('button'); delBtn.className='plain-btn'; delBtn.textContent='Delete'; delBtn.onclick = () => { if (confirm('Delete this saved list?')) { deleteList(idx); refreshListsGrid(); } };
+        actions.appendChild(loadBtn); actions.appendChild(exportBtn); actions.appendChild(delBtn);
+        row.appendChild(meta); row.appendChild(actions); listsGrid.appendChild(row);
+      });
+    }
+
+    function deleteList(index) { const items = readStorage(); items.splice(index,1); writeStorage(items); }
+
+    function downloadJSON(obj, filename) { const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); }
+
+    exportAllBtn.addEventListener('click', () => { const all = readStorage(); if (!all.length) { alert('No saved lists to export.'); return; } downloadJSON(all, 'movie-tierlists-backup.json'); });
+
+    importFile.addEventListener('change', (e) => {
+      const f = e.target.files[0]; if (!f) return; const reader = new FileReader(); reader.onload = (ev) => {
+        try { const imported = JSON.parse(ev.target.result); if (!Array.isArray(imported)) { alert('Invalid backup file: expected array of lists'); return; } writeStorage(imported.concat(readStorage())); alert('Import complete. Open Lists to view.'); refreshListsGrid(); } catch (err) { alert('Invalid JSON file'); }
+      }; reader.readAsText(f);
+    });
+
+    function loadList(index) {
+      const items = readStorage(); const it = items[index]; if (!it) return;
+      // clear current
+      const allPosters = document.querySelectorAll('.poster'); allPosters.forEach(p => p.remove());
+      // recreate unranked and tiers according to saved data
+      it.tiers.forEach(t => {
+        const tierEl = document.querySelector(`.tier[data-tier="${t.tierId}"]`);
+        // set label if present
+        if (tierEl && t.label) tierEl.querySelector('.tier-label').textContent = t.label;
+        if (tierEl && Array.isArray(t.items)) {
+          t.items.forEach(item => {
+            const img = document.createElement('img'); img.src = item.src; img.className='poster'; img.draggable=true; img.dataset.movieTitle = item.title || ''; img.dataset.movieYear = item.year || ''; img.addEventListener('dragstart', dragStart); img.addEventListener('click', onPosterClick);
+            tierEl.appendChild(img);
+          });
+        }
+      });
+      // unranked
+      if (Array.isArray(it.unranked)) {
+        it.unranked.forEach(item => {
+          const img = document.createElement('img'); img.src = item.src; img.className='poster'; img.draggable=true; img.dataset.movieTitle = item.title || ''; img.dataset.movieYear = item.year || ''; img.addEventListener('dragstart', dragStart); img.addEventListener('click', onPosterClick);
+          unranked.appendChild(img);
+        });
+      }
+    }
+
+    // -------------------- Utility to capture page state for quick export (PNG + JSON) --------------------
+    function captureAndPrepareExport() {
+      // returns an object similar to captureCurrentList()
+      return captureCurrentList();
+    }
+
+    // -------------------- Init --------------------
+    initMobilePosterClick();
+
+    // If user wants quick instruction about backup: expose simple API in console
+    window.__movieTierApp = { readStorage, writeStorage, captureCurrentList };
+
+    // -------------------- End --------------------
+  </script>
+</body>
+</html>
