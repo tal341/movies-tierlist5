@@ -1,225 +1,467 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <title>🎬 My Movie Tier List</title>
+  <meta name="description" content="Create your personal movie tier list! Type a name, drag to rank, save as image — simple, beautiful, free.">
+  <meta name="keywords" content="movie tier list, rate movies, film ranking, SSS tier, movies, tv series">
+  <meta name="author" content="TaL.S">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Movies31 Tier List</title>
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #222; color: #fff; }
-    header { padding: 10px; background: #111; text-align: center; }
-    .container { padding: 20px; }
-    .tier { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 15px; background: #333; margin-bottom: 15px; padding: 10px; border-radius: 6px; }
-    .tier-label { font-weight: bold; margin-right: 10px; }
-    .poster { width: 120px; cursor: grab; }
-    .controls { margin: 20px 0; }
-    button { padding: 6px 12px; margin: 5px; cursor: pointer; border: none; border-radius: 4px; background: #555; color: #fff; }
-    button:hover { background: #777; }
-    #settingsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
-    #settingsContent { background: #222; margin: 10% auto; padding: 20px; width: 300px; border-radius: 6px; }
-    .list-section { margin-top: 15px; }
-    .list-item { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; }
+    body {
+      margin: 0;
+      background: #0a0a0a;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 25px 10px;
+      background: rgba(10,10,10,0.9);
+      backdrop-filter: blur(4px);
+      position: relative;
+    }
+    h1 {
+      margin: 0;
+      font-size: 2.3rem;
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.2);
+    }
+
+    .made-by {
+      position: absolute;
+      top: 15px;
+      right: 65px;
+      font-size: 14px;
+      opacity: 0.7;
+      letter-spacing: 0.5px;
+      background: rgba(30,30,30,0.6);
+      padding: 4px 12px;
+      border-radius: 20px;
+      backdrop-filter: blur(2px);
+      z-index: 10;
+    }
+
+    .made-by strong {
+      color: #ffdd55;
+      font-weight: bold;
+      text-shadow: 0 0 4px rgba(255,221,85,0.5);
+    }
+
+    .settings-btn {
+      position: absolute;
+      top: 18px;
+      right: 25px;
+      font-size: 22px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(40,40,40,0.7);
+      border: none;
+      border-radius: 50%;
+      color: #ffdd55;
+      cursor: pointer;
+      z-index: 15;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(3px);
+    }
+
+    .settings-btn:hover {
+      transform: scale(1.1);
+      background: rgba(60,60,60,0.9);
+      box-shadow: 0 0 12px rgba(255,221,85,0.4);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: #1a1a1a;
+      width: 90%;
+      max-width: 500px;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      position: relative;
+      animation: modalPop 0.3s ease-out;
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal h2 {
+      margin-top: 0;
+      color: #ffdd55;
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .modal p {
+      line-height: 1.6;
+      margin-bottom: 15px;
+      font-size: 15px;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      background: none;
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .close-modal:hover {
+      color: #ffdd55;
+    }
+
+    .modal-credit {
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 1px solid #333;
+      font-size: 14px;
+      text-align: center;
+      color: #aaa;
+    }
+
+    .modal-credit strong {
+      color: #ffdd55;
+    }
+
+    .edit-tier-section {
+      margin-top: 30px;
+    }
+
+    .edit-tier-section h3 {
+      color: #ffdd55;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .tier-edit-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding: 8px;
+      background: rgba(40,40,40,0.5);
+      border-radius: 8px;
+    }
+
+    .tier-edit-row input {
+      flex: 1;
+      padding: 8px 12px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: white;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    .tier-edit-row .label-preview {
+      font-weight: bold;
+      min-width: 60px;
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(255,221,85,0.15);
+      color: #ffdd55;
+    }
+
+    .tier-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 25px 15px;
+    }
+
+    .tier {
+      min-height: 130px;
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 15px;
+      backdrop-filter: blur(3px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tier:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+
+    .tier-label-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 5px;
+      min-width: 110px;
+      z-index: 2;
+    }
+
+    .tier-label-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tier-icon {
+      font-size: 20px;
+      opacity: 0.8;
+    }
+
+    .tier-label {
+      font-weight: 900;
+      font-size: 28px;
+      color: #fff;
+      text-shadow: 0 0 8px rgba(0,0,0,0.8);
+      letter-spacing: 1px;
+      line-height: 1.1;
+    }
+
+    .tier-subtitle {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.7;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .tier.SSS { background: linear-gradient(135deg, rgba(255,30,30,0.15), transparent); border: 2px solid rgba(255,215,0,0.3); }
+    .tier.SS  { background: linear-gradient(135deg, rgba(255,140,0,0.1), transparent); border: 2px solid rgba(255,180,0,0.2); }
+    .tier.S   { background: linear-gradient(135deg, rgba(255,220,0,0.08), transparent); border: 2px solid rgba(255,220,0,0.2); }
+    .tier.Ap  { background: linear-gradient(135deg, rgba(100,255,100,0.07), transparent); border: 2px solid rgba(100,255,100,0.2); }
+    .tier.B   { background: linear-gradient(135deg, rgba(150,200,255,0.06), transparent); border: 2px solid rgba(150,200,255,0.2); }
+    .tier.C   { background: linear-gradient(135deg, rgba(180,80,180,0.05), transparent); border: 2px solid rgba(180,80,180,0.2); }
+
+    .movie {
+      width: 90px;
+      height: 130px;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: grab;
+      background: #222;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      text-align: center;
+      font-size: 14px;
+      padding: 6px;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .movie.dragging {
+      opacity: 0.6;
+      transform: scale(1.08);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      cursor: grabbing;
+      z-index: 100;
+    }
+
+    @media (max-width: 600px) {
+      .tier-list { padding: 15px 10px; gap: 15px; }
+      .tier-label { font-size: 22px; }
+      .movie { width: 65px; height: 100px; font-size: 12px; padding: 4px; }
+    }
+
   </style>
 </head>
 <body>
   <header>
-    <h1>Movies31 Tier List</h1>
+    <h1>🎬 My Movie Tier List</h1>
+    <div class="made-by">made by <strong>TaL.S</strong></div>
+    <button class="settings-btn" id="settingsBtn">⚙️</button>
   </header>
 
-  <div class="container">
-    <div class="controls">
-      <input type="text" id="searchInput" placeholder="Search for a movie...">
-      <button id="searchBtn">Search</button>
-      <button id="settingsBtn">⚙️ Settings</button>
-      <button id="saveListBtn">💾 Save List</button>
-    </div>
-
-    <div id="searchResults" class="tier"></div>
-
-    <div id="tiers">
-      <div class="tier" data-tier="S"><span class="tier-label">S</span></div>
-      <div class="tier" data-tier="A"><span class="tier-label">A</span></div>
-      <div class="tier" data-tier="B"><span class="tier-label">B</span></div>
-      <div class="tier" data-tier="C"><span class="tier-label">C</span></div>
-      <div class="tier" data-tier="D"><span class="tier-label">D</span></div>
-    </div>
-  </div>
-
-  <!-- Settings Modal -->
-  <div id="settingsModal">
-    <div id="settingsContent">
-      <h3>Settings</h3>
-      <button id="downloadBtn">⬇️ Download Tier List as Image</button>
-      <button id="listsBtn">📂 Lists</button>
-      <button id="closeSettings">Close</button>
-    </div>
-  </div>
-
-  <!-- Lists Modal -->
-  <div id="listsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7);">
-    <div style="background:#222; margin:10% auto; padding:20px; width:350px; border-radius:6px;">
-      <h3>Saved Lists</h3>
-      <div id="listsContainer"></div>
-      <div class="list-section">
-        <button id="exportAllBtn">Export All (JSON)</button>
-        <input type="file" id="importFile" style="display:none">
-        <button id="importBtn">Import JSON</button>
+  <div class="tier-list" id="tierList">
+    <div class="tier SSS" data-tier="SSS">
+      <div class="tier-label-container">
+        <div class="tier-label-wrapper">
+          <span class="tier-icon">🔥</span>
+          <span class="tier-label">SSS</span>
+        </div>
+        <span class="tier-subtitle">Top Tier</span>
       </div>
-      <button id="closeLists">Close</button>
+    </div>
+
+    <div class="tier SS" data-tier="SS">
+      <div class="tier-label-container">
+        <div class="tier-label-wrapper">
+          <span class="tier-icon">💥</span>
+          <span class="tier-label">SS</span>
+        </div>
+        <span class="tier-subtitle">Excellent</span>
+      </div>
+    </div>
+
+    <div class="tier S" data-tier="S">
+      <div class="tier-label-container">
+        <div class="tier-label-wrapper">
+          <span class="tier-icon">⚡</span>
+          <span class="tier-label">S</span>
+        </div>
+        <span class="tier-subtitle">Great</span>
+      </div>
+    </div>
+
+    <div class="tier Ap" data-tier="Ap">
+      <div class="tier-label-container">
+        <div class="tier-label-wrapper">
+          <span class="tier-icon">🌟</span>
+          <span class="tier-label">Ap</span>
+        </div>
+        <span class="tier-subtitle">Above Avg</span>
+      </div>
+    </div>
+
+    <div class="tier B" data-tier="B">
+      <div class="tier-label-container">
+        <div class="tier-label-wrapper">
+          <span class="tier-icon">✨</span>
+          <span class="tier-label">B</span>
+        </div>
+        <span class="tier-subtitle">Good</span>
+      </div>
+    </div>
+
+    <div class="tier C" data-tier="C">
+      <div class="tier-label-container">
+        <div class="tier-label-wrapper">
+          <span class="tier-icon">💤</span>
+          <span class="tier-label">C</span>
+        </div>
+        <span class="tier-subtitle">Okay</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <button class="close-modal" id="closeModal">×</button>
+      <h2>Settings</h2>
+      <div class="edit-tier-section">
+        <h3>Edit Tier Labels</h3>
+        <div class="tier-edit-row">
+          <span class="label-preview">SSS</span>
+          <input type="text" data-tier="SSS" value="SSS">
+        </div>
+        <div class="tier-edit-row">
+          <span class="label-preview">SS</span>
+          <input type="text" data-tier="SS" value="SS">
+        </div>
+        <div class="tier-edit-row">
+          <span class="label-preview">S</span>
+          <input type="text" data-tier="S" value="S">
+        </div>
+        <div class="tier-edit-row">
+          <span class="label-preview">Ap</span>
+          <input type="text" data-tier="Ap" value="Ap">
+        </div>
+        <div class="tier-edit-row">
+          <span class="label-preview">B</span>
+          <input type="text" data-tier="B" value="B">
+        </div>
+        <div class="tier-edit-row">
+          <span class="label-preview">C</span>
+          <input type="text" data-tier="C" value="C">
+        </div>
+      </div>
+
+      <div class="modal-credit">
+        Developed by <strong>TaL.S</strong>
+      </div>
     </div>
   </div>
 
   <script>
-    const apiKey = "thewdb"; // OMDB demo key
-    const searchBtn = document.getElementById("searchBtn");
-    const searchInput = document.getElementById("searchInput");
-    const searchResults = document.getElementById("searchResults");
+    const settingsBtn = document.getElementById('settingsBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const closeModal = document.getElementById('closeModal');
 
-    searchBtn.addEventListener("click", () => {
-      const query = searchInput.value;
-      if (!query) return;
-      fetch(`https://www.omdbapi.com/?s=${query}&apikey=${apiKey}`)
-        .then(res => res.json())
-        .then(data => {
-          searchResults.innerHTML = "";
-          if (data.Search) {
-            data.Search.forEach(movie => {
-              const img = document.createElement("img");
-              img.src = movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/100x150";
-              img.className = "poster";
-              img.draggable = true;
-              img.dataset.title = movie.Title;
-              searchResults.appendChild(img);
-            });
-          }
-        });
+    settingsBtn.addEventListener('click', () => {
+      modalOverlay.classList.add('active');
+    });
+
+    closeModal.addEventListener('click', () => {
+      modalOverlay.classList.remove('active');
+    });
+
+    modalOverlay.addEventListener('click', e => {
+      if (e.target === modalOverlay) modalOverlay.classList.remove('active');
     });
 
     // Drag & Drop
-    document.addEventListener("dragstart", e => {
-      if (e.target.classList.contains("poster")) {
-        e.dataTransfer.setData("text/plain", e.target.src + "||" + e.target.dataset.title);
-      }
-    });
+    const movies = document.querySelectorAll('.movie');
+    const tiers = document.querySelectorAll('.tier');
 
-    document.querySelectorAll(".tier").forEach(tier => {
-      tier.addEventListener("dragover", e => e.preventDefault());
-      tier.addEventListener("drop", e => {
-        e.preventDefault();
-        const data = e.dataTransfer.getData("text/plain").split("||");
-        const img = document.createElement("img");
-        img.src = data[0];
-        img.dataset.title = data[1];
-        img.className = "poster";
-        img.draggable = true;
-        tier.appendChild(img);
+    let draggedItem = null;
+
+    movies.forEach(movie => {
+      movie.addEventListener('dragstart', () => {
+        draggedItem = movie;
+        setTimeout(() => movie.classList.add('dragging'), 0);
+      });
+
+      movie.addEventListener('dragend', () => {
+        draggedItem = null;
+        movie.classList.remove('dragging');
       });
     });
 
-    // Settings modal
-    const settingsBtn = document.getElementById("settingsBtn");
-    const settingsModal = document.getElementById("settingsModal");
-    const closeSettings = document.getElementById("closeSettings");
-    settingsBtn.onclick = () => settingsModal.style.display = "block";
-    closeSettings.onclick = () => settingsModal.style.display = "none";
-
-    // Lists modal
-    const listsBtn = document.getElementById("listsBtn");
-    const listsModal = document.getElementById("listsModal");
-    const closeLists = document.getElementById("closeLists");
-    listsBtn.onclick = () => { renderLists(); listsModal.style.display = "block"; };
-    closeLists.onclick = () => listsModal.style.display = "none";
-
-    // Save List
-    const saveListBtn = document.getElementById("saveListBtn");
-    saveListBtn.onclick = () => {
-      const listName = prompt("Enter a name for this list:");
-      if (!listName) return;
-      const tiers = {};
-      document.querySelectorAll(".tier").forEach(tier => {
-        const label = tier.dataset.tier || "Search";
-        tiers[label] = [];
-        tier.querySelectorAll(".poster").forEach(img => {
-          tiers[label].push({ src: img.src, title: img.dataset.title });
-        });
+    tiers.forEach(tier => {
+      tier.addEventListener('dragover', e => e.preventDefault());
+      tier.addEventListener('drop', () => {
+        tier.appendChild(draggedItem);
       });
-      let saved = JSON.parse(localStorage.getItem("tierLists") || "[]");
-      saved.unshift({ name: listName, data: tiers, date: new Date().toLocaleString() });
-      localStorage.setItem("tierLists", JSON.stringify(saved));
-      alert("List saved!");
-    };
+    });
 
-    // Render saved lists
-    function renderLists() {
-      const container = document.getElementById("listsContainer");
-      container.innerHTML = "";
-      const saved = JSON.parse(localStorage.getItem("tierLists") || "[]");
-      if (!saved.length) { container.innerHTML = "<p>No saved lists</p>"; return; }
-      saved.forEach((list, idx) => {
-        const div = document.createElement("div");
-        div.className = "list-item";
-        div.innerHTML = `<span>${list.name} (${list.date})</span>`;
-        const loadBtn = document.createElement("button");
-        loadBtn.textContent = "Load";
-        loadBtn.onclick = () => loadList(idx);
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "Delete";
-        delBtn.onclick = () => { saved.splice(idx,1); localStorage.setItem("tierLists", JSON.stringify(saved)); renderLists(); };
-        div.appendChild(loadBtn);
-        div.appendChild(delBtn);
-        container.appendChild(div);
+    // Edit Tier Labels
+    const tierInputs = document.querySelectorAll('.tier-edit-row input');
+    tierInputs.forEach(input => {
+      input.addEventListener('input', e => {
+        const tierClass = input.dataset.tier;
+        const tierElem = document.querySelector(`.tier.${tierClass} .tier-label`);
+        tierElem.textContent = input.value;
       });
-    }
-
-    // Load a list
-    function loadList(index) {
-      const saved = JSON.parse(localStorage.getItem("tierLists") || "[]");
-      const list = saved[index];
-      if (!list) return;
-      document.querySelectorAll(".tier").forEach(tier => tier.innerHTML = `<span class=\"tier-label\">${tier.dataset.tier}</span>`);
-      Object.keys(list.data).forEach(label => {
-        const tier = document.querySelector(`.tier[data-tier='${label}']`);
-        if (tier) {
-          list.data[label].forEach(item => {
-            const img = document.createElement("img");
-            img.src = item.src;
-            img.dataset.title = item.title;
-            img.className = "poster";
-            img.draggable = true;
-            tier.appendChild(img);
-          });
-        }
-      });
-      listsModal.style.display = "none";
-    }
-
-    // Export All
-    document.getElementById("exportAllBtn").onclick = () => {
-      const saved = localStorage.getItem("tierLists") || "[]";
-      const blob = new Blob([saved], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "tierlists.json";
-      a.click();
-    };
-
-    // Import JSON
-    document.getElementById("importBtn").onclick = () => document.getElementById("importFile").click();
-    document.getElementById("importFile").onchange = e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = ev => {
-        try {
-          const imported = JSON.parse(ev.target.result);
-          localStorage.setItem("tierLists", JSON.stringify(imported));
-          renderLists();
-          alert("Lists imported!");
-        } catch {
-          alert("Invalid JSON");
-        }
-      };
-      reader.readAsText(file);
-    };
+    });
   </script>
 </body>
 </html>
